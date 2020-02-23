@@ -11,8 +11,6 @@ export async function main(event, context) {
       ProductId: uuid.v1(),
       UserId: event.requestContext.identity.cognitoIdentityId,
       Category: data.Category,
-      // Year: data.Year,
-      // Quality: data.Quality,
       Attachment: data.Attachment,
       CreatedAt: Date.now()
     }
@@ -22,6 +20,6 @@ export async function main(event, context) {
     await dynamoDbLib.call("put", params);
     return success(params.Item);
   } catch (e) {
-    return failure({ status: false });
+    return failure({ status: false, error: e });
   }
 }

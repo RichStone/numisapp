@@ -1,7 +1,7 @@
 # NOTE: update this with your service name
 service: numisapp
 
-# Create an optimized package for our functions 
+# Create an optimized package for our functions
 package:
   individually: true
 
@@ -63,5 +63,14 @@ functions:
       - http:
           path: products
           method: get
+          cors: true
+          authorizer: aws_iam
+
+  update:
+    handler: functions/update.main
+    events:
+      - http:
+          path: products/{id}
+          method: put
           cors: true
           authorizer: aws_iam
