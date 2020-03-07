@@ -1,5 +1,4 @@
-# NOTE: update this with your service name
-service: numisapp
+service: numify
 
 # Create an optimized package for our functions
 package:
@@ -10,6 +9,13 @@ plugins:
   - serverless-offline
   - serverless-dotenv-plugin # Load .env as environment variables
 
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or fallsback to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  # Set the table name here so we can use it while testing locally
+  tableName: ${self:custom.stage}-products
+
 provider:
   name: aws
   versionFunctions: false
@@ -19,7 +25,7 @@ provider:
   # These environment variables are made available to our functions
   # under process.env.
   environment:
-    tableName: numisapp-theo-assets
+    tableName: ${self:custom.tableName}
     stripeSecretKey: ${env:STRIPE_SECRET_KEY}
 
   iamRoleStatements:
@@ -32,7 +38,10 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:eu-central-1:*:*"
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - "Fn::GetAtt": [ProductsTable, Arn]
 
 functions:
   create:
@@ -91,4 +100,12 @@ functions:
 
 # Create our resources with separate CloudFormation templates
 resources:
+  # API Gateway Errors
   - ${file(resources/api-gateway-errors.yml)}
+  # DynamoDB
+  - ${file(resources/dynamodb-table.yml)}
+  # S3
+  - ${file(resources/s3-bucket.yml)}
+  # Cognito
+  - ${file(resources/cognito-user-pool.yml)}
+  - ${file(resources/cognito-identity-pool.yml)}
