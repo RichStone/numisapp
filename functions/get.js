@@ -5,6 +5,7 @@ export async function main(event, context) {
   const params = {
     TableName: process.env.tableName,
     Key: {
+      UserId: event.requestContext.identity.cognitoIdentityId,
       ProductId: event.pathParameters.id
     }
   };
@@ -18,6 +19,6 @@ export async function main(event, context) {
       return failure({ status: false, error: "Item not found." });
     }
   } catch (e) {
-    return failure({ status: false, error: e, errorStack: e.stackTrace});
+    return failure({ status: false, error: e, errorStack: e.stackTrace });
   }
 }
